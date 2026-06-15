@@ -453,13 +453,39 @@ function validateAndPay(){
   }
 
   if(link && link !== "contact"){
-    window.open(link, "_blank");
+    // Fire Facebook Pixel Purchase/InitiateCheckout event
+    if(typeof fbq !== 'undefined'){
+      var tourName = document.getElementById('bk-tour-name') ? document.getElementById('bk-tour-name').textContent : slug;
+      fbq('track', 'InitiateCheckout', {
+        content_name: tourName,
+        content_category: 'Tour Booking',
+        currency: 'USD',
+        num_items: 1
+      });
+    }
+    // Small delay to ensure pixel fires before redirect
+    setTimeout(function(){
+      window.open(link, "_blank");
+    }, 300);
   } else {
+    // Fire Lead event for contact enquiries
+    if(typeof fbq !== 'undefined'){
+      fbq('track', 'Lead');
+    }
     window.location.href = "contact.html";
   }
 }
 
 window.addEventListener("DOMContentLoaded", function(){
+  // Fire ViewContent when booking page loads
+  if(typeof fbq !== 'undefined'){
+    var slug = getSlug();
+    fbq('track', 'ViewContent', {
+      content_name: slug,
+      content_category: 'Tour',
+      currency: 'USD'
+    });
+  }
   loadTour();
   var fqs = document.querySelectorAll(".faq-q");
   for(var i=0; i<fqs.length; i++){
